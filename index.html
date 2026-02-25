@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Number Theory Academy</title>
+    
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
+
+    <style>
+        :root {
+            --gold: #d4af37; --paper: #f4e4bc; --ink: #2c1e11;
+            --royal-blue: #1e3a8a; --seal-red: #991b1b; --wood: #1a120b;
+        }
+
+        body {
+            background-color: var(--wood);
+            background-image: url("https://www.transparenttextures.com/patterns/dark-leather.png");
+            color: var(--ink); font-family: 'Georgia', serif; margin: 0;
+            display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; overflow-x: hidden;
+        }
+
+        .app-container { width: 100%; max-width: 850px; padding: 40px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+        .royal-font { font-family: 'Times New Roman', Times, serif; color: var(--gold); text-shadow: 2px 2px 4px rgba(0,0,0,0.8); font-variant: small-caps; letter-spacing: 3px; margin: 20px 0; }
+
+        .view { display: none; opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease, transform 0.8s ease; width: 100%; }
+        .view.active { display: flex; flex-direction: column; align-items: center; opacity: 1; transform: translateY(0); }
+
+        #welcome-page { padding-top: 10vh; }
+        .academy-seal { font-size: 100px; margin-bottom: 20px; filter: drop-shadow(0 0 15px var(--gold)); }
+
+        .project-credits { margin-top: 40px; padding: 15px; border-top: 1px double var(--gold); color: var(--paper); font-style: italic; background: rgba(0,0,0,0.2); border-radius: 8px; width: 100%; max-width: 400px; }
+        .credits-label { color: var(--gold); font-variant: small-caps; font-weight: bold; display: block; letter-spacing: 1px; }
+
+        .dashboard-container { display: flex; justify-content: center; width: 100%; margin-top: 40px; }
+        .dashboard { display: grid; grid-template-columns: repeat(2, 220px); grid-template-rows: repeat(2, auto); gap: 40px; justify-content: center; }
+
+        .square-tab {
+            background: var(--paper); padding: 40px 20px; border-radius: 4px; position: relative; cursor: pointer;
+            box-shadow: 10px 10px 25px rgba(0,0,0,0.6); border-left: 14px solid #e2d1a4; border-right: 14px solid #e2d1a4;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .square-tab:hover { transform: translateY(-10px) scale(1.05); box-shadow: 0 20px 40px rgba(212, 175, 55, 0.3); }
+        .square-tab span { font-size: 3rem; }
+        .square-tab h3 { margin: 15px 0 0; font-variant: small-caps; color: var(--ink); }
+
+        .square-tab::before, .square-tab::after {
+            content: ""; position: absolute; height: 18px; width: 110%; background: #c5b38a; left: -5%; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .square-tab::before { top: -9px; }
+        .square-tab::after { bottom: bottom: -9px; }
+
+        .content-box { background: var(--paper); background-image: url("https://www.transparenttextures.com/patterns/paper-fibers.png"); padding: 45px; border-radius: 8px; border: 3px double var(--gold); margin-top: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); width: 90%; max-width: 600px; }
+        .btn { background: var(--seal-red); color: white; border: 1px solid #7f1d1d; padding: 16px 35px; font-weight: bold; cursor: pointer; margin: 15px; text-transform: uppercase; letter-spacing: 2px; font-family: 'Georgia'; transition: 0.3s; box-shadow: 0 4px 0 #601212; }
+        .btn:hover { background: #b91c1c; transform: translateY(-2px); }
+
+        .lesson-step { text-align: left; padding: 20px; border-left: 5px solid var(--gold); background: rgba(0,0,0,0.05); margin-bottom: 25px; }
+
+        #sieveGrid { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; padding: 15px; background: #d9c5a0; border-radius: 4px; max-height: 400px; overflow-y: auto; border: 2px inset #b5a481; margin-top: 15px; }
+        .cell { width: 38px; height: 38px; border: 1px solid #b5a481; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; font-size: 0.9rem; background: #fff; transition: 0.2s; }
+        .cell.prime { background: var(--gold); color: white; transform: scale(1.1); box-shadow: 0 0 10px var(--gold); }
+        .cell.composite { opacity: 0.2; text-decoration: line-through; background: #ccc; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    <div id="welcome-page" class="view active" style="opacity: 1; display: flex;">
+        <div class="academy-seal">📜</div>
+        <h1 class="royal-font" style="font-size: 4.5rem; margin-bottom: 10px;">The Number Theory Academy</h1>
+        <p style="color: var(--paper); font-style: italic; letter-spacing: 3px; margin-bottom: 50px; font-size: 1.2rem;">Seek the Truth in the Language of the Universe</p>
+        <button class="btn" onclick="goToDashboard()" style="font-size: 1.4rem;">Enter the Academy</button>
+        <div class="project-credits">
+            <span class="credits-label">Royal Scholar</span> <p>Ashika K J</p>
+            <span class="credits-label">Scholar's House (Class)</span> <p>6 BSc PM</p>
+            <span class="credits-label">Registry Number</span> <p>2340364</p>
+        </div>
+    </div>
+
+    <div id="dashboard-view" class="view">
+        <h1 class="royal-font" style="font-size: 3rem;">The Academy Grounds</h1>
+        <div class="dashboard-container">
+            <div class="dashboard">
+                <div class="square-tab" onclick="showIntro('sieve')"><span>🧮</span><h3>The Sieve</h3></div>
+                <div class="square-tab" onclick="showIntro('vault')"><span>🔒</span><h3>The Vault</h3></div>
+                <div class="square-tab" onclick="showIntro('caesar')"><span>📜</span><h3>The Caesar</h3></div>
+                <div class="square-tab" onclick="showIntro('modulo')"><span>🧭</span><h3>The Modulo</h3></div>
+            </div>
+        </div>
+        <button class="btn" onclick="showView('welcome-page')" style="margin-top: 60px; background: #444; font-size: 0.9rem;">Return to the Gates</button>
+    </div>
+
+    <div id="instructions" class="view">
+        <div class="content-box">
+            <h2 id="insTitle" class="royal-font" style="color: var(--seal-red); font-size: 2.5rem;"></h2>
+            <p id="insText" style="font-size: 1.3rem; line-height: 1.7; color: var(--ink);"></p>
+            <button class="btn" onclick="startGame()">Begin the Lesson</button>
+            <button class="btn" style="background:#555" onclick="goToDashboard()">Retreat</button>
+        </div>
+    </div>
+
+    <div id="game-sieve" class="view">
+        <div class="content-box">
+            <h2 class="royal-font" style="color: var(--seal-red);">The Prime Map</h2>
+            <p>Click a number to mark it as <b>Prime</b> and eliminate its multiples. Filter the map to reveal the truth!</p>
+            <input type="number" id="sieveLimit" value="50" min="2" max="1000">
+            <button class="btn" onclick="buildSieve()" style="padding: 10px 20px; font-size: 0.9rem;">Cast the Sieve</button>
+            <div id="sieveGrid"></div>
+            <div id="sieveWinBtn" style="display:none; margin-top:20px;">
+                <button class="btn" onclick="winQuest('🌟 Pure Wisdom! 🌟<br>Your mind filters through chaos to find the pure truth, just like a <b>Prime Number</b> among the composites!')">Claim Victory</button>
+            </div>
+            <button class="btn" style="background:#444" onclick="goToDashboard()">Return</button>
+        </div>
+    </div>
+
+    <div id="game-modulo" class="view">
+        <div class="content-box">
+            <h2 class="royal-font" style="color:var(--seal-red); font-size: 2.2rem;">The Royal Compass: Modulo</h2>
+            <div class="lesson-step">
+                <p><b>I. The Positive Path:</b> Modulo reveals the <i>remainder</i>. If you divide 17 by 5, the remainder is <b>2</b>. Mathematically, $17 \equiv 2 \pmod 5$.</p>
+            </div>
+            <div class="lesson-step">
+                <p><b>II. The Negative Path:</b> For negative numbers like $-3 \pmod{10}$, simply add the modulus until positive: $-3 + 10 = 7$.</p>
+            </div>
+            <div style="text-align: center; border: 2px dashed var(--gold); padding: 15px; background: rgba(255,255,255,0.5);">
+                <input type="number" id="modA" value="-3" oninput="calcMod()"> mod 
+                <input type="number" id="modB" value="10" oninput="calcMod()">
+                <h1 id="modDisplay" style="color:var(--seal-red); font-size: 4rem; margin: 10px 0;">7</h1>
+            </div>
+            <div class="lesson-step" style="margin-top: 20px;">
+                <p><b>The Scholar's Trial:</b> <span id="modTrialText" style="font-weight: bold;"></span></p>
+                <input type="number" id="modTrialInput" placeholder="?">
+                <button class="btn" onclick="checkModTrial()">Submit Answer</button>
+            </div>
+            <button class="btn" style="background:#444" onclick="goToDashboard()">Return</button>
+        </div>
+    </div>
+
+    <div id="game-vault" class="view">
+        <div class="content-box">
+            <h2 class="royal-font" style="color: var(--seal-red);">The King's Vault</h2>
+            <p id="vaultPrompt" style="font-size: 1.4rem; font-weight: bold;"></p>
+            <input type="number" id="vaultInput">
+            <br>
+            <button class="btn" onclick="checkVault()">Crack the Seal</button>
+            <button class="btn" style="background:#444" onclick="goToDashboard()">Return</button>
+        </div>
+    </div>
+
+    <div id="game-caesar" class="view">
+        <div class="content-box">
+            <h2 class="royal-font" style="color: var(--seal-red);">The Scriptarium</h2>
+            
+            <div class="lesson-step">
+                <p><b>The Rule of Three:</b> Caesar's Cipher is a <i>substitution cipher</i> where each letter is shifted 3 places down the alphabet.</p>
+                <p><b>The Expression:</b> Mathematically, for each letter position $P$ and shift $k=3$:</p>
+                <p style="text-align: center; font-size: 1.4rem; color: var(--seal-red);">
+                    $C \equiv (P + 3) \pmod{26}$
+                </p>
+            </div>
+
+            
+
+            <h1 id="cipherText" style="letter-spacing:12px; color:var(--seal-red); margin: 30px 0; background: rgba(0,0,0,0.05); padding: 10px; border-radius: 5px;"></h1>
+            
+            <p>Reverse the shift to reveal the hidden math term:</p>
+            <input type="text" id="caesarInput" placeholder="Enter word...">
+            <br>
+            <button class="btn" onclick="checkCaesar()">Submit Decree</button>
+            <button class="btn" style="background:#444" onclick="goToDashboard()">Return</button>
+        </div>
+    </div>
+
+    <div id="success-view" class="view">
+        <div class="content-box">
+            <h1 class="royal-font" style="font-size: 3.5rem;">🏆 Excellence! 🏆</h1>
+            <p id="happyMessage" style="font-size: 1.6rem; font-weight: bold; margin: 20px 0; color: var(--ink); line-height: 1.6;"></p>
+            <button class="btn" onclick="goToDashboard()">Continue the Pilgrimage</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let activeTopic = '', modAnswer = 0, vaultAnswer = 0, caesarAnswer = "";
+
+    function showView(id) {
+        document.querySelectorAll('.view').forEach(v => { v.classList.remove('active'); v.style.display = 'none'; });
+        const next = document.getElementById(id); next.style.display = 'flex';
+        setTimeout(() => next.classList.add('active'), 10);
+    }
+
+    function goToDashboard() { showView('dashboard-view'); }
+    function showIntro(topic) {
+        activeTopic = topic;
+        const titles = {sieve: "The Sieve Room", vault: "The Treasure Vault", caesar: "The Scriptarium", modulo: "The Compass Chamber"};
+        document.getElementById('insTitle').innerText = titles[topic];
+        document.getElementById('insText').innerText = "Prove your mastery of the Royal Arts of Calculation.";
+        showView('instructions');
+    }
+
+    function startGame() {
+        showView('game-' + activeTopic);
+        if(activeTopic === 'modulo') initModTrial();
+        if(activeTopic === 'sieve') buildSieve();
+        if(activeTopic === 'vault') initVault();
+        if(activeTopic === 'caesar') initCaesar();
+    }
+
+    function buildSieve() {
+        let limit = Math.min(parseInt(document.getElementById('sieveLimit').value) || 50, 1000);
+        let grid = document.getElementById('sieveGrid');
+        grid.innerHTML = ''; document.getElementById('sieveWinBtn').style.display = 'block';
+        for(let i=2; i<=limit; i++) {
+            let d = document.createElement('div'); d.className = 'cell'; d.innerText = i; d.id = 's'+i;
+            d.onclick = () => {
+                d.classList.add('prime');
+                for(let j=i*2; j<=limit; j+=i) {
+                    let c = document.getElementById('s'+j);
+                    if(c) c.classList.add('composite');
+                }
+            };
+            grid.appendChild(d);
+        }
+    }
+
+    function getGCD(a, b) { return b === 0 ? a : getGCD(b, a % b); }
+    function initVault() {
+        let n1 = (Math.floor(Math.random() * 10) + 2) * 6, n2 = (Math.floor(Math.random() * 10) + 2) * 4;
+        vaultAnswer = getGCD(n1, n2);
+        document.getElementById('vaultPrompt').innerText = `Find the GCD of ${n1} and ${n2}:`;
+    }
+    function checkVault() { 
+        if(document.getElementById('vaultInput').value == vaultAnswer) winQuest("🌟 Success! 🌟<br>The precision of your logic is as absolute as a <b>Square Root</b>.<br>Your capacity for reasoning is an <b>Infinite Set</b>!");
+        else alert("The seal remains closed! Check your divisibility rules.");
+    }
+
+    function initCaesar() {
+        const words = ["MATH", "PRIME", "LOGIC", "PROOF", "GAUSS", "EULER"];
+        caesarAnswer = words[Math.floor(Math.random() * words.length)];
+        let cipher = "";
+        for(let i=0; i<caesarAnswer.length; i++) {
+            cipher += String.fromCharCode(((caesarAnswer.charCodeAt(i) - 65 + 3) % 26) + 65);
+        }
+        document.getElementById('cipherText').innerText = cipher;
+    }
+    function checkCaesar() { 
+        if(document.getElementById('caesarInput').value.toUpperCase() === caesarAnswer) winQuest("📜 Decree Deciphered! 📜<br><b>Complex Numbers</b> are beautiful, but they pale in comparison to the complexity of your brilliant mind!");
+        else alert("The Scriptarium rejected your translation! Remember to reverse the shift of 3.");
+    }
+
+    function mathMod(n, m) { return ((n % m) + m) % m; }
+    function calcMod() {
+        let a = parseInt(document.getElementById('modA').value), b = parseInt(document.getElementById('modB').value);
+        document.getElementById('modDisplay').innerText = (b !== 0) ? mathMod(a, b) : "!";
+    }
+    function initModTrial() {
+        let n1 = Math.floor(Math.random() * 20) - 20, n2 = Math.floor(Math.random() * 10) + 5;
+        modAnswer = mathMod(n1, n2);
+        document.getElementById('modTrialText').innerText = `Solve: ${n1} mod ${n2}`;
+    }
+    function checkModTrial() { 
+        if(parseInt(document.getElementById('modTrialInput').value) === modAnswer) winQuest("🧭 Compass Mastered! 🧭<br>Your intellect possesses the <b>Perfect Symmetry</b> of a geometric masterpiece.");
+        else alert("Incorrect! Re-calculate using the modular clock rules.");
+    }
+
+    function winQuest(customMessage) {
+        document.getElementById('happyMessage').innerHTML = customMessage;
+        showView('success-view');
+        for(let i=0; i<60; i++) {
+            let p = document.createElement('div'); p.style.position='fixed'; p.style.width='10px'; p.style.height='10px';
+            p.style.backgroundColor = ['#d4af37','#991b1b','#ffffff','#1e3a8a'][Math.floor(Math.random()*4)];
+            p.style.left = Math.random()*100+'vw'; p.style.top='-10px'; p.style.zIndex='9999';
+            document.body.appendChild(p);
+            p.animate([{top: '-10px', transform: 'rotate(0deg)'}, {top: '100vh', transform: 'rotate(720deg)'}], {duration: 2000 + Math.random()*2000});
+            setTimeout(() => p.remove(), 4000);
+        }
+    }
+</script>
+</body>
+</html>
